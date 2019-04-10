@@ -1,0 +1,14 @@
+exp_replay:
+    buffer: 5000 # replay buffer size
+    batch: 64 # minibatch size
+    update_every: 4 # how often to update the network
+dq:
+    gamma: 0.995 # discount factor
+    tau: 1e-3 # for soft update of target parameters
+    lr: 8e-4 # learning rate
+train:
+    n_episodes: 2000
+    max_t: 1000
+    eps_start: 1.0
+    eps_end: 1e-2
+    eps_decay: 0.997
