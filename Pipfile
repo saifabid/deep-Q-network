@@ -7,6 +7,12 @@ verify_ssl = true
 
 [packages]
 "ruamel.yaml" = "==0.15.91"
+gym = {extras = ["atari"],version = "*"}
+ipykernel = "*"
+pillow = "*"
+torch = "*"
+torchvision = "*"
+matplotlib = "*"
 
 [requires]
-python_version = "2.7"
+python_version = "3.7"
