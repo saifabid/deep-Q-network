@@ -14,7 +14,7 @@ class SimpleNN(BaseModel, tf.keras.Model):
         self.predictions = layers.Dense(action_shape, activation=tf.nn.softmax)
 
         self.optimizer = SimpleNN.get_optimizer()
-        self.loss_object = SimpleNN.tf.losses.SparseCategoricalCrossentropy()
+        self.loss_object = SimpleNN.get_loss_object()
 
         self.train_loss = tf.keras.metrics.Mean(name='train_loss')
         self.train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
