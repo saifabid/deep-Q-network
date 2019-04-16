@@ -11,13 +11,18 @@ class BaseModel(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def reset(self):
+    def save(self, *args, **kwargs):
         pass
 
     @abc.abstractmethod
-    def saveModel(self, *args, **kwargs):
+    def load(self, *args, **kwargs):
         pass
 
     @abc.abstractmethod
-    def loadModel(self, *args, **kwargs):
+    def reset_metrics(self):
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def metrics():
         pass

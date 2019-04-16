@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from common.base_model import BaseModel
 import tensorflow as tf
 from tensorflow.keras import layers
@@ -8,22 +10,36 @@ class SimpleNN(BaseModel, tf.keras.Model):
     def __init__(self, observation_shape, action_shape):
         super(SimpleNN, self).__init__("simple_nn")
 
-        self.dense_1 = layers.Dense(observation_shape, activation=tf.nn.relu)
-        self.dense_2 = layers.Dense(32, activation=tf.nn.relu)
-        self.dense_3 = layers.Dense(16, activation=tf.nn.relu)
-        self.predictions = layers.Dense(action_shape, activation=tf.nn.softmax)
+        self.observation_shape = observation_shape
+        self.action_shape = action_shape
 
+        self.define_layers()
         self.optimizer = SimpleNN.get_optimizer()
         self.loss_object = SimpleNN.get_loss_object()
 
-        self.train_loss = tf.keras.metrics.Mean(name='train_loss')
-        self.train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
+        self.metrics = self.metrics()
 
-        self.test_loss = tf.keras.metrics.Mean(name='test_loss')
-        self.test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
+    def define_layers(self):
+        self.dense1 = layers.Dense(self.observation_shape, activation=tf.nn.relu)
+        self.dense2 = layers.Dense(32, activation=tf.nn.relu)
+        self.dense3 = layers.Dense(16, activation=tf.nn.relu)
+        self.predictions = layers.Dense(self.action_shape, activation=tf.nn.softmax)
 
-    def reset(self):
-        pass
+    def reset_metrics(self):
+        for _, v in self.metrics.items():
+            for _, vv in v.items():
+                vv.reset_states()
+
+    @staticmethod
+    def metrics():
+        metrics = defaultdict(dict)
+        metrics['train']['loss'] = tf.keras.metrics.Mean(name='train_loss')
+        metrics['train']['accuracy'] = tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
+
+        metrics['test']['loss'] = tf.keras.metrics.Mean(name='test_loss')
+        metrics['test']['accuracy'] = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
+
+        return metrics
 
     @staticmethod
     def get_optimizer():
@@ -33,13 +49,13 @@ class SimpleNN(BaseModel, tf.keras.Model):
     def get_loss_object():
         return tf.losses.SparseCategoricalCrossentropy()
 
+    @tf.function
     def call(self, inputs):  # tf.keras.Model calls call() internally when the object is called
-        x = self.dense_1(inputs)
-        x = self.dense_2(x)
-        x = self.dense_3(x)
-        x = self.predictions(x)
+        fprop = self.dense1(inputs)
+        fprop = self.dense2(fprop)
+        fprop = self.dense3(fprop)
 
-        return x
+        return self.predictions(fprop)
 
     def train(self, data):
         for x, y in data:
@@ -49,24 +65,27 @@ class SimpleNN(BaseModel, tf.keras.Model):
             gradients = tape.gradient(loss, self.trainable_variables)
             self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
-            self.train_loss(loss)
-            self.train_accuracy(y, y_)
+            self.metrics['train']['loss'](loss)
+            self.metrics['train']['accuracy'](y, y_)
 
     def test(self, data):
         for x, y in data:
             y_ = self(x)
             t_loss = self.loss_object(y, y_)
 
-            self.test_loss(t_loss)
-            self.test_accuracy(y, y_)
+            self.metrics['test']['loss'](t_loss)
+            self.metrics['test']['accuracy'](y, y_)
 
     def forward(self, inputs):
         return self.call(inputs)
 
-    def saveModel(self, *args, **kwargs):
-        pass
+    def save(self, *args, **kwargs):
+        tf.saved_model.save(self, '/tmp/saved_model/',
+                            signatures=self.call.get_concrete_function(
+                                tf.TensorSpec(shape=[None, self.observation_shape], dtype=tf.float32, name="inp")
+                            ))
 
-    def loadModel(self, *args, **kwargs):
+    def load(self, *args, **kwargs):
         pass
 
 
@@ -95,7 +114,11 @@ if __name__ == '__main__':  # train mnist
         model.test(mnist_test)
         template = 'Epoch {}, Loss: {}, Accuracy: {}, Test Loss: {}, Test Accuracy: {}'
         print(template.format(epoch + 1,
-                              model.train_loss.result(),
-                              model.train_accuracy.result() * 100,
-                              model.test_loss.result(),
-                              model.test_accuracy.result() * 100))
+                              model.metrics['train']['loss'].result(),
+                              model.metrics['train']['accuracy'].result() * 100,
+                              model.metrics['test']['loss'].result(),
+                              model.metrics['test']['accuracy'].result() * 100))
+        tf.saved_model.save(model, '/tmp/saved_model/',
+                            signatures=model.call.get_concrete_function(
+                                tf.TensorSpec(shape=[None, model.observation_shape], dtype=tf.float32, name="inp")
+                            ))
