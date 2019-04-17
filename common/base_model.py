@@ -11,7 +11,7 @@ class BaseModel(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def save(self, *args, **kwargs):
+    def save_model(self, *args, **kwargs):
         pass
 
     @abc.abstractmethod

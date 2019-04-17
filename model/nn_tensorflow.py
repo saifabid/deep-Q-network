@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict
 
 from common.base_model import BaseModel
@@ -7,6 +8,9 @@ import tensorflow_datasets as tfds
 
 
 class SimpleNN(BaseModel, tf.keras.Model):
+    checkpoint_directory = "/tmp/training_checkpoints/simplenn"
+    checkpoint_prefix = os.path.join(checkpoint_directory, "ckpt")
+
     def __init__(self, observation_shape, action_shape):
         super(SimpleNN, self).__init__("simple_nn")
 
@@ -79,14 +83,14 @@ class SimpleNN(BaseModel, tf.keras.Model):
     def forward(self, inputs):
         return self.call(inputs)
 
-    def save(self, *args, **kwargs):
-        tf.saved_model.save(self, '/tmp/saved_model/',
-                            signatures=self.call.get_concrete_function(
-                                tf.TensorSpec(shape=[None, self.observation_shape], dtype=tf.float32, name="inp")
-                            ))
+    def save_model(self, *args, **kwargs):
+        checkpoint = tf.train.Checkpoint(optimizer=self.optimizer, model=self)
+        checkpoint.save(file_prefix=SimpleNN.checkpoint_prefix)
 
     def load(self, *args, **kwargs):
-        pass
+        checkpoint = tf.train.Checkpoint(optimizer=self.optimizer, model=self)
+        status = checkpoint.restore(tf.train.latest_checkpoint(SimpleNN.checkpoint_directory))
+        print("Status: ", status)
 
 
 if __name__ == '__main__':  # train mnist
@@ -109,6 +113,8 @@ if __name__ == '__main__':  # train mnist
     EPOCHS = 15
     model = SimpleNN(784, 10)
 
+    #model.load()
+
     for epoch in range(EPOCHS):
         model.train(mnist_train)
         model.test(mnist_test)
@@ -118,7 +124,4 @@ if __name__ == '__main__':  # train mnist
                               model.metrics['train']['accuracy'].result() * 100,
                               model.metrics['test']['loss'].result(),
                               model.metrics['test']['accuracy'].result() * 100))
-        tf.saved_model.save(model, '/tmp/saved_model/',
-                            signatures=model.call.get_concrete_function(
-                                tf.TensorSpec(shape=[None, model.observation_shape], dtype=tf.float32, name="inp")
-                            ))
+        model.save_model()
