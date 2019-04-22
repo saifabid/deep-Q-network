@@ -20,6 +20,10 @@ class BaseAgent(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
+    def step(self, state, action, reward, next_state, done):
+        pass
+
+    @abc.abstractmethod
     def save(self, *args, **kwargs):
         pass
 
