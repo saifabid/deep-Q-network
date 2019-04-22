@@ -5,8 +5,15 @@ from common.utils import get_config
 
 class BaseAgent(metaclass=abc.ABCMeta):
 
-    def __init__(self, config_path):
+    def __init__(self,
+                 seed,
+                 config_path,
+                 ob_space,
+                 ac_space):
         self.config = get_config(config_path)
+        self.seed = seed
+        self.ob_space = ob_space
+        self.ac_space = ac_space
 
     @abc.abstractmethod
     def act(self, state, *args, **kwargs):

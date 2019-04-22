@@ -6,9 +6,9 @@ Transition = namedtuple("Transition", ('state', 'action', 'next_state', 'reward'
 
 class BaseMemory(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def add(self, trans):
+    def append(self, trans):
         pass
 
     @abc.abstractmethod
-    def sample(self, *args, **kwargs):
+    def random_batch(self, batch_size):
         pass

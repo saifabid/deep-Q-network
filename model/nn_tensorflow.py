@@ -11,11 +11,11 @@ class SimpleNN(BaseModel, tf.keras.Model):
     checkpoint_directory = "/tmp/training_checkpoints/simplenn"
     checkpoint_prefix = os.path.join(checkpoint_directory, "ckpt")
 
-    def __init__(self, observation_shape, action_shape):
+    def __init__(self, input_shape, output_shape):
         super(SimpleNN, self).__init__("simple_nn")
 
-        self.observation_shape = observation_shape
-        self.action_shape = action_shape
+        self.observation_shape = input_shape
+        self.action_shape = output_shape
 
         self.define_layers()
         self.optimizer = SimpleNN.get_optimizer()
@@ -90,7 +90,6 @@ class SimpleNN(BaseModel, tf.keras.Model):
     def load(self, *args, **kwargs):
         checkpoint = tf.train.Checkpoint(optimizer=self.optimizer, model=self)
         status = checkpoint.restore(tf.train.latest_checkpoint(SimpleNN.checkpoint_directory))
-        print("Status: ", status)
 
 
 if __name__ == '__main__':  # train mnist
