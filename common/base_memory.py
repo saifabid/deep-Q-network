@@ -1,9 +1,12 @@
 import abc
+from collections import namedtuple
+
+Transition = namedtuple("Transition", ('state', 'action', 'next_state', 'reward'))
 
 
 class BaseMemory(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def add(self, state, action, reward, next_state, done):
+    def add(self, trans):
         pass
 
     @abc.abstractmethod
