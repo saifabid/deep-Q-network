@@ -7,10 +7,10 @@ class BaseAgent(metaclass=abc.ABCMeta):
 
     def __init__(self,
                  seed,
-                 config_path,
+                 config,
                  ob_space,
                  ac_space):
-        self.config = get_config(config_path)
+        self.config = config
         self.seed = seed
         self.ob_space = ob_space
         self.ac_space = ac_space

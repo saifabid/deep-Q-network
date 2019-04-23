@@ -1,18 +1,24 @@
 from common.base_agent import BaseAgent
-from common.base_memory import Transition
-from common.base_policy import EpsGreedy
-from memory.experience_replay import ReplayMem
-from model.nn_tensorflow import SimpleNN
+from common.base_memory import Transition, BaseMemory
 
 
 class DQN(BaseAgent):
-    def __init__(self, config_path, seed, ob_space, ac_space):
-        super().__init__(seed, config_path, ob_space, ac_space)
+    def __init__(self,
+                 config,
+                 seed,
+                 ob_space,
+                 ac_space,
+                 av_model,
+                 memory,
+                 policy,
+                 ):
+        super().__init__(seed, config, ob_space, ac_space)
 
-        self.memory = ReplayMem(buffer=self.config['exp_replay']['buffer'])
-        self.av_model = SimpleNN(input_shape=ob_space, output_shape=ac_space)
-        self.policy = EpsGreedy(eps=self.config['train']['eps_start'])
+        self.memory = memory
+        self.av_model = av_model
+        self.policy = policy
         self.gamma = self.config['dq']['gamma']
+        self.eps = self.config['train']['eps_start']
 
     def load(self, *args, **kwargs):
         pass
@@ -38,7 +44,7 @@ class DQN(BaseAgent):
         return False
 
     def __update_hyper_params__(self):
-        # TODO if necessary
+        self.policy.update()
         pass
 
     def __learn__(self):

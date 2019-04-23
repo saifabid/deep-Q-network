@@ -1,3 +1,4 @@
+import gym
 import ruamel.yaml as yaml
 
 
@@ -7,3 +8,9 @@ def get_config(config_file):
     config = yaml.safe_load(stream)
 
     return config
+
+
+def load_environment(env_name):
+    env = gym.make(env_name)
+
+    return env
