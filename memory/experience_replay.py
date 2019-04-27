@@ -1,11 +1,13 @@
-from common.base_memory import BaseMemory
-import random
 import numpy as np
+
+from common.base_memory import BaseMemory
 
 
 class ReplayMem(BaseMemory):
+    # TODO Make sure the return objects from memory is always numpy ndarrays
     def __init__(self, buffer):
         self.buffer = buffer
+        # TODO a more efficient way to store the transitions
         self.memory = []
         self.position = 0
 

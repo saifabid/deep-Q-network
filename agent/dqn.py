@@ -3,8 +3,8 @@ from common.base_memory import Transition, BaseMemory
 import numpy as np
 
 # TODO ﻿Every C steps reset ^Q~Q -> Define Q prime
+# TODO Double DQN vs DQN -> max(Q(s', a))  <-> Q(s', argmax_a(Q'(s', a))
 # TODO according to paper we need to clip the error term -> We also found it helpful to clip the error term from the update to be between -1 and 1.
-
 
 class DQN(BaseAgent):
     def __init__(self,
@@ -40,7 +40,7 @@ class DQN(BaseAgent):
 
         self.t_step = (self.t_step + 1) % self.config['exp_replay']['update_every']
         if self.__time_to_learn__():
-                self.__learn__()
+            self.__learn__()
 
     def __time_to_learn__(self):
         if self.t_step == 0 and len(self.memory) > self.config['exp_replay']['batch']:

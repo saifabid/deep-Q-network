@@ -48,7 +48,7 @@ class Player:
                 solved = self.glogger.report_solved(i_episode)
 
                 if solved:
-                    # TODO Save
+                    # TODO Save with file name
                     self.agent.save(i_episode)
 
         self.glogger.plot_scores()
@@ -84,7 +84,7 @@ class GameLogger:
             self.plot_scores()
 
         if np.mean(self.scores_window) >= self.winning_threshold:
-            print('Environment solved in {:d} episodes!\tAverage Score: {:.2f}'.format(i_episode - self.scores_window,
+            print('Environment solved in {:d} episodes!\tAverage Score: {:.2f}'.format(i_episode,
                                                                                        np.mean(self.scores_window)))
             return True
 

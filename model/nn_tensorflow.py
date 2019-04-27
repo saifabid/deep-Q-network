@@ -10,8 +10,7 @@ import tensorflow_datasets as tfds
 
 
 class SimpleNN(BaseModel, tf.keras.Model):
-    checkpoint_directory = "/tmp/training_checkpoints/simplenn"
-    checkpoint_prefix = os.path.join(checkpoint_directory, "ckpt")
+    checkpoint_directory = "./tmp/training_checkpoints/simplenn"
 
     def __init__(self, input_shape, output_shape):
         super(SimpleNN, self).__init__("simple_nn")
@@ -26,7 +25,6 @@ class SimpleNN(BaseModel, tf.keras.Model):
         self.metrics = self.metrics()
 
     def define_layers(self):
-        print(self.observation_shape)
         self.dense1 = layers.Dense(self.observation_shape, activation=tf.nn.relu)
         self.dense2 = layers.Dense(32, activation=tf.nn.relu)
         self.dense3 = layers.Dense(16, activation=tf.nn.relu)
@@ -91,9 +89,10 @@ class SimpleNN(BaseModel, tf.keras.Model):
         inputs = inputs.astype(float)
         return self.call(inputs)
 
-    def save_model(self, *args, **kwargs):
+    def save_model(self, episode):
+        checkpoint_prefix = os.path.join(SimpleNN.checkpoint_directory, episode)
         checkpoint = tf.train.Checkpoint(optimizer=self.optimizer, model=self)
-        checkpoint.save(file_prefix=SimpleNN.checkpoint_prefix)
+        checkpoint.save(file_prefix=checkpoint_prefix)
 
     def load(self, *args, **kwargs):
         checkpoint = tf.train.Checkpoint(optimizer=self.optimizer, model=self)
