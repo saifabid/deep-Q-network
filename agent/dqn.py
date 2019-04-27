@@ -1,5 +1,9 @@
 from common.base_agent import BaseAgent
 from common.base_memory import Transition, BaseMemory
+import numpy as np
+
+# TODO ﻿Every C steps reset ^Q~Q -> Define Q prime
+# TODO according to paper we need to clip the error term -> We also found it helpful to clip the error term from the update to be between -1 and 1.
 
 
 class DQN(BaseAgent):
@@ -19,6 +23,7 @@ class DQN(BaseAgent):
         self.policy = policy
         self.gamma = self.config['dq']['gamma']
         self.eps = self.config['train']['eps_start']
+        self.t_step = 0
 
     def load(self, *args, **kwargs):
         pass
@@ -30,14 +35,14 @@ class DQN(BaseAgent):
         return selected_action
 
     def step(self, state, action, reward, next_state, done):
-        transition = Transition(state, action, reward, next_state)
+        transition = Transition(state, action, reward, next_state, done)
         self.memory.append(transition)
 
         self.t_step = (self.t_step + 1) % self.config['exp_replay']['update_every']
-        if self.__time_to_train__():
+        if self.__time_to_learn__():
                 self.__learn__()
 
-    def __time_to_train__(self):
+    def __time_to_learn__(self):
         if self.t_step == 0 and len(self.memory) > self.config['exp_replay']['batch']:
             return True
 
@@ -49,8 +54,8 @@ class DQN(BaseAgent):
 
     def __learn__(self):
         train_batch = self.memory.random_batch(self.config['exp_replay']['batch'])
-
-        Q = self.av_model.forward(train_batch.next_state)
+        train_batch_mtx = np.array(train_batch)
+        Q = self.av_model.forward(train_batch_mtx[:,3])
         labels = train_batch.reward + self.gamma * Q * (1 - train_batch.done)
         self.av_model.train(zip(train_batch.state, labels))
 

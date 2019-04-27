@@ -24,10 +24,11 @@ class SimpleNN(BaseModel, tf.keras.Model):
         self.metrics = self.metrics()
 
     def define_layers(self):
+        print(self.observation_shape)
         self.dense1 = layers.Dense(self.observation_shape, activation=tf.nn.relu)
         self.dense2 = layers.Dense(32, activation=tf.nn.relu)
         self.dense3 = layers.Dense(16, activation=tf.nn.relu)
-        self.predictions = layers.Dense(self.action_shape, activation=tf.nn.softmax)
+        self.predictions = layers.Dense(self.action_shape)
 
     def reset_metrics(self):
         for _, v in self.metrics.items():
@@ -51,7 +52,7 @@ class SimpleNN(BaseModel, tf.keras.Model):
 
     @staticmethod
     def get_loss_object():
-        return tf.losses.SparseCategoricalCrossentropy()
+        return tf.losses.MeanSquaredError()
 
     @tf.function
     def call(self, inputs):  # tf.keras.Model calls call() internally when the object is called
@@ -117,6 +118,8 @@ if __name__ == '__main__':  # train mnist
     for epoch in range(EPOCHS):
         model.train(mnist_train)
         model.test(mnist_test)
+        # new_model = SimpleNN(784, 10)
+        # new_model.set_weights(model.get_weights())
         template = 'Epoch {}, Loss: {}, Accuracy: {}, Test Loss: {}, Test Accuracy: {}'
         print(template.format(epoch + 1,
                               model.metrics['train']['loss'].result(),

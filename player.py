@@ -27,8 +27,13 @@ class Player:
 
     def play_episode(self):
         state = self.env.reset()
+
         score = 0
         for t in range(self.config['train']['max_t']):
+            state = np.reshape(state, (1,-1))
+            state = state.astype(float)
+            print ("HI", state.shape)
+
             reward, state, done = self.step(state)
             score += reward
 
@@ -39,7 +44,7 @@ class Player:
         return score
 
     def play(self):
-        for i_episode in range(1, self.config['train']['n_episodes'] + 1):
+        for i_episode in range(1, 10):
             score = self.play_episode()
             self.glogger.log_score(score)
 
@@ -54,6 +59,10 @@ class Player:
 
 
 class GameLogger:
+    # TODO Decouple visualization from logger
+    # TODO Add Tensorboard support to GameLogger
+    # TODO Create an interface for game logger if necessary
+
     def __init__(self, scores_window_size, winning_threshold):
         self.scores = []  # list containing scores from each episode
         self.scores_window = deque(maxlen=scores_window_size)  # last 100 scores

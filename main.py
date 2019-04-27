@@ -1,29 +1,27 @@
 #!/usr/bin/env python3
-import gym
-import numpy as np
-from collections import deque
-import torch
-import matplotlib.pyplot as plt
 import argparse
+
 import common.utils as cutils
 from agent.dqn import DQN
 from common.base_policy import EpsGreedy
 from memory.experience_replay import ReplayMem
 from model.nn_tensorflow import SimpleNN
-
+from player import Player, GameLogger
 
 
 def main(config_path, env_name, train_mode=True, weights_path=None):
     """Load the environment, create an agent, and train it.
     """
     config = cutils.get_config(config_path)
-    env, brain_name = cutils.load_environment(env_name)
+    env = cutils.load_environment(env_name)
     action_size = env.action_space.n
     state_size = env.observation_space.shape
-
+    print (state_size)
     memory = ReplayMem(buffer=config['exp_replay']['buffer'])
-    av_model = SimpleNN(input_shape=state_size, output_shape=action_size)
-    policy = EpsGreedy(eps=config['train']['eps_start'])
+    av_model = SimpleNN(input_shape=state_size[0], output_shape=action_size)
+    policy = EpsGreedy(eps=config['train']['eps_start'],
+                       decay=config['train']['eps_decay'],
+                       eps_end=config['train']['eps_end'])
 
     agent = DQN(config,
                 seed=0,
@@ -36,10 +34,15 @@ def main(config_path, env_name, train_mode=True, weights_path=None):
     if weights_path is not None:
         agent.load(weights_path)
 
-    scores = play(env, brain_name, agent, config, train_mode, weights_path)
-    env.close()
+    game_logger = GameLogger(100, 10) # TODO Add winning threshold to arguments
+    player = Player(agent=agent,
+                    env=env,
+                    config=config,
+                    game_logger=game_logger,
+                    train_mode=train_mode)
+    player.play()
 
-    return scores
+    return player.glogger.scores
 
 
 if __name__ == "__main__":
@@ -53,4 +56,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print("Train_mode: {}".format(args.train))
-    main("model/config.yaml", train_mode=args.train, weights_path=args.path, env_name=args.env_name)
+    # TODO add config to arguments
+    main("agent/config.yaml", train_mode=args.train, weights_path=args.path, env_name=args.env_name)
