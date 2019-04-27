@@ -30,14 +30,10 @@ class Player:
 
         score = 0
         for t in range(self.config['train']['max_t']):
-            state = np.reshape(state, (1,-1))
-            state = state.astype(float)
-            print ("HI", state.shape)
-
             reward, state, done = self.step(state)
             score += reward
 
-            # print('\r', 'Iteration', t, 'Score:', score, end='')
+            print('\r', 'Iteration', t, 'Score:', score, end='')
             if done:
                 return score
 

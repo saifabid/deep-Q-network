@@ -11,7 +11,8 @@ class ReplayMem(BaseMemory):
 
     def random_batch(self, batch_size):
         idxs = np.random.choice(len(self.memory), batch_size)
-        return [self.memory[idx] for idx in idxs]
+        train_batch = [self.memory[idx] for idx in idxs]
+        return map(lambda x: np.array(x), zip(*train_batch))
 
     def append(self, trans):
         self.memory.append(trans)

@@ -1,6 +1,8 @@
 import os
 from collections import defaultdict
 
+import numpy as np
+
 from common.base_model import BaseModel
 import tensorflow as tf
 from tensorflow.keras import layers
@@ -65,6 +67,7 @@ class SimpleNN(BaseModel, tf.keras.Model):
     def train(self, data):
         for x, y in data:
             with tf.GradientTape() as tape:
+                x = x.reshape((1, -1))
                 y_ = self(x)
                 loss = self.loss_object(y, y_)
             gradients = tape.gradient(loss, self.trainable_variables)
@@ -82,6 +85,10 @@ class SimpleNN(BaseModel, tf.keras.Model):
             self.metrics['test']['accuracy'](y, y_)
 
     def forward(self, inputs):
+        if len(inputs.shape) == 1:  # one input instead of batch
+            inputs = np.reshape(inputs, (1, -1))
+
+        inputs = inputs.astype(float)
         return self.call(inputs)
 
     def save_model(self, *args, **kwargs):
@@ -113,7 +120,7 @@ if __name__ == '__main__':  # train mnist
     EPOCHS = 15
     model = SimpleNN(784, 10)
 
-    #model.load()
+    # model.load()
 
     for epoch in range(EPOCHS):
         model.train(mnist_train)

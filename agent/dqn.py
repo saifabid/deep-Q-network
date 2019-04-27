@@ -53,11 +53,11 @@ class DQN(BaseAgent):
         pass
 
     def __learn__(self):
-        train_batch = self.memory.random_batch(self.config['exp_replay']['batch'])
-        train_batch_mtx = np.array(train_batch)
-        Q = self.av_model.forward(train_batch_mtx[:,3])
-        labels = train_batch.reward + self.gamma * Q * (1 - train_batch.done)
-        self.av_model.train(zip(train_batch.state, labels))
+        state, action, reward, next_state, done = self.memory.random_batch(self.config['exp_replay']['batch'])
+
+        Q = self.av_model.forward(next_state)
+        labels = reward + self.gamma * np.max(Q, axis=1) * (1 - done)
+        self.av_model.train(zip(state, labels))
 
         self.__update_hyper_params__()
 

@@ -1,6 +1,8 @@
 import abc
 from collections import namedtuple
 
+import numpy
+
 Transition = namedtuple("Transition", ('state', 'action', 'reward', 'next_state', 'done'))
 
 

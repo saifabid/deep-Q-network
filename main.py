@@ -16,7 +16,7 @@ def main(config_path, env_name, train_mode=True, weights_path=None):
     env = cutils.load_environment(env_name)
     action_size = env.action_space.n
     state_size = env.observation_space.shape
-    print (state_size)
+
     memory = ReplayMem(buffer=config['exp_replay']['buffer'])
     av_model = SimpleNN(input_shape=state_size[0], output_shape=action_size)
     policy = EpsGreedy(eps=config['train']['eps_start'],
@@ -25,7 +25,7 @@ def main(config_path, env_name, train_mode=True, weights_path=None):
 
     agent = DQN(config,
                 seed=0,
-                ob_space=state_size,
+                ob_space=state_size[0],
                 ac_space=action_size,
                 av_model=av_model,
                 memory=memory,
